@@ -186,7 +186,6 @@ public class Task2 {
     private static List<int[]> getData(String... args) {
         List<int[]> result = new ArrayList<>();
         List<String[]> strings = new ArrayList<>();
-
         try {
             if (args.length != 0) {
                 strings = getDataFromFile(args[0]);
@@ -196,7 +195,6 @@ public class Task2 {
         } catch (IOException | IllegalArgumentException e) {
             System.err.println(e.getMessage());
         }
-
         for (String[] strArr : strings) {
             try {
                 int a = Integer.parseInt(strArr[0]);
@@ -208,7 +206,6 @@ public class Task2 {
                                 Arrays.toString(strArr));
             }
         }
-
         return result;
     }
 
