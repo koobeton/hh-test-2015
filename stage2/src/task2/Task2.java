@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -24,98 +25,48 @@ import java.util.List;
  *
  * <p><b>ВВОД:</b>
  * <ul>
- *     <li><b>из файла</b><br>
- *         &#1048;мя файла передается первым аргументом в программу.<br>
- *         <i><u>Пример:</u> java Task2 filename</i><br>
- *         Входные данные должны быть записаны в первой строке файла через пробел:<br>
- *         <i>делимое делитель основание_системы_счисления</i><br>
- *         <i><u>Пример:</u> 1 2 8</i>
+ *     <li><b>&#1048;з файла</b><br>
+ *         Наборы входных данных должны быть записаны в текстовом файле по строкам,
+ *         каждый набор в отдельной строке. В строке данные разделяются пробелом:<br>
+ *         <i><b>делимое делитель основание_системы_счисления</b></i><br>
+ *         <u>Пример:</u><br>
+ *         <i>1 2 8<br>
+ *         1 12 10</i><br>
+ *         &#1048;мя файла передается в программу первым аргументом.<br>
+ *         <u>Пример:</u> <i>java Task2 filename</i>
  *     </li>
- *     <li><b>с клавиатуры</b><br>
- *         Если не указано имя файла.
+ *     <li><b>С клавиатуры</b><br>
+ *         Если при запуске программы не указано имя файла, программа запрашивает данные у пользователя.
+ *         В этом случае вводится только один набор данных.
  *     </li>
  * </ul>
  *
  * <p><b>ВЫВОД:</b>
  * <ul>
- *     <li><b>System.out</b>
+ *     <li>Основной вывод в <b>{@code System.out}</b><br>
+ *         Ошибки в <b>{@code System.err}</b>
  *     </li>
  * </ul>
  * */
 public class Task2 {
 
     /**
-     * @param args Первый аргумент - имя файла со входными данными
-     * @throws IOException Если возникает исключение в System.in
+     * @param args Первый аргумент - имя файла, содержащего входные данные
      * */
-    public static void main(String... args) throws IOException {
+    public static void main(String... args) {
 
         Task2 instance = new Task2();
 
-        //читаем входные данные:
-        //если при запуске программы первым аргументом указано имя файла со входными данными
-        //- то из первой строки этого файла, иначе - вводим последовательно с клавиатуры
-        String[] params;
-        if (args.length != 0) {
-            try (BufferedReader br = new BufferedReader(new FileReader(args[0]))) {
-                String line;
-                if ((line = br.readLine()) == null) {
-                    throw new IllegalArgumentException("Error: Wrong parameters number\n" +
-                            "Must be: (int)dividend (int)divisor (int)radix");
-                }
-                params = line.split(" ", 3);
-                if (params.length != 3) {
-                    throw new IllegalArgumentException("Error: Wrong parameters number\n" +
-                            "Must be: (int)dividend (int)divisor (int)radix");
-                }
-            } catch (IllegalArgumentException | IOException e) {
-                System.err.println(e.getMessage());
-                params = getFromKeyboard();
-            }
-        } else {
-            params = getFromKeyboard();
-        }
-
-        int a = 0;
-        int b = 0;
-        int k = 0;
-
-        //заполняем входные данные
-        try {
-            a = Integer.parseInt(params[0]);
-            b = Integer.parseInt(params[1]);
-            k = Integer.parseInt(params[2]);
-            if (b == 0) {
-                throw new IllegalArgumentException("Error: The second argument (divisor) " +
-                        "can not be equal to 0 (division by 0)");
-            }
-            if (k <= 0) {
-                throw new IllegalArgumentException("Error: The third argument (radix) " +
-                        "must be greater than 0 (division by 0)");
-            }
-        } catch (NumberFormatException e) {
-            System.err.println("Error: All arguments must be an integer");
-            System.exit(1);
-        } catch (IllegalArgumentException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        //получаем входные данные
+        List<int[]> dataList = getData(args);
 
         //переводим число в k-ичную систему счисления
-        System.out.println(instance.divideToRadix(a, b, k));
-    }
-
-    private static String[] getFromKeyboard() throws IOException {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
-            String[] result = new String[3];
-            System.out.println("Enter data:");
-            System.out.print("a = ");
-            result[0] = br.readLine();
-            System.out.print("b = ");
-            result[1] = br.readLine();
-            System.out.print("k = ");
-            result[2] = br.readLine();
-            return result;
+        for (int[] data : dataList) {
+            try {
+                System.out.println(instance.divideToRadix(data[0], data[1], data[2]));
+            } catch (IllegalArgumentException e) {
+                System.err.println(e.getMessage());
+            }
         }
     }
 
@@ -127,8 +78,19 @@ public class Task2 {
      * @param radix Основание системы счисления
      *
      * @return Текстовое представление числа a/b, записанного в k-ичной системе счисления
+     *
+     * @throws IllegalArgumentException Если делитель равен 0 или основание системы счисления
+     * меньше либо равно 0
      */
-    private String divideToRadix(int dividend, int divisor, int radix) {
+    String divideToRadix(int dividend, int divisor, int radix) {
+        if (divisor == 0) {
+            throw new IllegalArgumentException("Error: The second argument (divisor) " +
+                    "can not be equal to 0 (division by 0)");
+        }
+        if (radix <= 0) {
+            throw new IllegalArgumentException("Error: The third argument (radix) " +
+                    "must be greater than 0 (division by 0)");
+        }
         //для перевода отрицательных чисел учитываем знак
         String sign = dividend * divisor < 0 ? "-" : "";
         dividend = Math.abs(dividend);
@@ -150,7 +112,7 @@ public class Task2 {
      *
      * @return Текстовое представление целой части числа в k-ичной системе счисления
      */
-    private String integerPartConvert(int number, int radix) {
+    String integerPartConvert(int number, int radix) {
         StringBuilder result = new StringBuilder();
         while (number >= radix) {
             result.insert(0, number % radix);
@@ -173,7 +135,7 @@ public class Task2 {
      *
      * @return Текстовое представление дробной части числа в k-ичной системе счисления
      */
-    private String fractionalPartConvert(int dividend, int divisor, int radix) {
+    String fractionalPartConvert(int dividend, int divisor, int radix) {
         //Для вычисления периода периодической дроби создаем список остатков от деления
         List<Integer> remainders = new ArrayList<>();
 
@@ -219,5 +181,66 @@ public class Task2 {
 
         //возвращаем результат
         return result.equals("") ? result : "." + result;
+    }
+
+    private static List<int[]> getData(String... args) {
+        List<int[]> result = new ArrayList<>();
+        List<String[]> strings = new ArrayList<>();
+
+        try {
+            if (args.length != 0) {
+                strings = getDataFromFile(args[0]);
+            } else {
+                strings.add(getDataFromKeyboard());
+            }
+        } catch (IOException | IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+        }
+
+        for (String[] strArr : strings) {
+            try {
+                int a = Integer.parseInt(strArr[0]);
+                int b = Integer.parseInt(strArr[1]);
+                int k = Integer.parseInt(strArr[2]);
+                result.add(new int[]{a, b, k});
+            } catch (NumberFormatException e) {
+                System.err.println("Error parsing integers from data: " +
+                                Arrays.toString(strArr));
+            }
+        }
+
+        return result;
+    }
+
+    private static List<String[]> getDataFromFile(String filename) throws IOException {
+        List<String[]> result = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(" ");
+                if (data.length == 3) {
+                    result.add(data);
+                } else {
+                    throw new IllegalArgumentException("Error: Wrong parameters number for data: " +
+                            Arrays.toString(data) + "\n" +
+                            "Must be: (int)dividend (int)divisor (int)radix");
+                }
+            }
+        }
+        return result;
+    }
+
+    private static String[] getDataFromKeyboard() throws IOException {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+            String[] result = new String[3];
+            System.out.println("Enter data:");
+            System.out.print("a = ");
+            result[0] = br.readLine();
+            System.out.print("b = ");
+            result[1] = br.readLine();
+            System.out.print("k = ");
+            result[2] = br.readLine();
+            return result;
+        }
     }
 }
