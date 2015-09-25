@@ -45,14 +45,16 @@ public class Task1 {
      * */
     public static void main(String... args) {
 
-        Task1 instance = new Task1();
-
         //получаем входные данные
         List<String> dataList = getData(args);
 
         //разворачиваем выражение
         for (String data : dataList) {
-            System.out.println(data);
+            Parser parser = new Parser(data);
+            for (String str : parser.parse()) {
+                System.out.print(str + " ");
+            }
+            System.out.println();
         }
     }
 
@@ -83,7 +85,7 @@ public class Task1 {
 
     private static String getDataFromKeyboard() throws IOException {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
-            System.out.print("Enter expression: ");
+            System.out.print("Enter statement: ");
             return br.readLine();
         }
     }
