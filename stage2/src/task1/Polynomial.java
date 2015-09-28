@@ -58,6 +58,27 @@ public class Polynomial {
         return this;
     }
 
+    /**
+     * Произведение двух полиномов. Степени мономов складываются, а их коэффициенты перемножаются.
+     *
+     * @param p1 Первый полином
+     * @param p2 Второй полином
+     *
+     * @return Произведение двух полиномов
+     * */
+    public static Polynomial multiply(Polynomial p1, Polynomial p2) {
+        Polynomial result = new Polynomial(p1.variable);
+        for (Integer p1Power : p1.monomials.keySet()) {
+            for (Integer p2Power : p2.monomials.keySet()) {
+                result.add(
+                        p1Power + p2Power,
+                        p1.monomials.get(p1Power) * p2.monomials.get(p2Power)
+                );
+            }
+        }
+        return result;
+    }
+
     private void removeZeroCoefficients() {
         Iterator<Integer> iterator = monomials.keySet().iterator();
         while (iterator.hasNext()) {
