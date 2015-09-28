@@ -1,12 +1,11 @@
 package task1;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 //TODO
 public class Parser {
 
+    private static final String POLYNOMIAL_PATTERN = "[-+]?[\\[0-9\\]*\\[A-Za-z\\]?]+\\^?[0-9]*";
     private String source;
     private String variable;
 
@@ -14,40 +13,63 @@ public class Parser {
      * @param source Выражение для разбора
      * */
     public Parser(String source) {
-        this.source = source;
+        spellCheck(source);
     }
 
     //TODO
-    public List<String> parse() {
+    public Polynomial parse() {
 
-        spellCheck();
-
-        return getPolynomial();
+        return parsePolynomial(source);
     }
 
-    //TODO
-    private List<String> getPolynomial() {
-        List<String> result = new ArrayList<>();
-        Scanner scanner = new Scanner(source);
-        String pattern = "[-+]?[\\[0-9\\]*\\[A-Za-z\\]?]+\\^?[0-9]*";
+    private Polynomial parsePolynomial(String string) {
+        Polynomial result = new Polynomial(variable);
+        Scanner scanner = new Scanner(string);
         String match;
-        while ((match = scanner.findInLine(pattern)) != null) {
-            result.add(match);
+        while ((match = scanner.findInLine(POLYNOMIAL_PATTERN)) != null) {
+            result.add(parseMonomial(match));
         }
         return result;
     }
 
-    private void spellCheck() {
+    private Polynomial parseMonomial(String monomial) {
+        Polynomial result = new Polynomial(variable);
+        int power;
+        int coefficient;
+        if (monomial.matches("[-+]?[0-9]*")) {
+            power = 0;
+            coefficient = new Scanner(monomial).nextInt();
+        } else if (monomial.matches("[-+]?" + variable)) {
+            power = 1;
+            coefficient = monomial.matches("-" + variable) ? -1 : 1;
+        } else if (monomial.matches("[-+]?[0-9]*" + variable)) {
+            power = 1;
+            coefficient = new Scanner(monomial).useDelimiter(variable).nextInt();
+        } else if (monomial.matches("[-+]?" + variable + "\\^[0-9]*")) {
+            power = new Scanner(monomial).useDelimiter("[-+]?" + variable + "\\^").nextInt();
+            coefficient = monomial.matches("-.*") ? -1 : 1;
+        } else if (monomial.matches("[-+]?[0-9]*" + variable + "\\^[0-9]*")) {
+            Scanner scanner = new Scanner(monomial).useDelimiter(variable + "\\^");
+            coefficient = scanner.nextInt();    //сначала коэффициент
+            power = scanner.nextInt();          //затем степень
+        } else {
+            throw new IllegalArgumentException("Not a monomial: " + monomial);
+        }
+        result.add(power, coefficient);
+        return result;
+    }
+
+    private void spellCheck(String rawSource) {
 
         //убираем лишние символы
-        source = source.replaceAll("[^A-Za-z0-9+-^()]", "");
+        source = rawSource.replaceAll("[^A-Za-z0-9+-^()]", "");
         if (source.equals("")) return;
 
         //извлекаем переменную
-        variable = source.replaceAll("[^A-Za-z]", "");
+        String vars = source.replaceAll("[^A-Za-z]", "");
         String firstVar;
-        if (variable.length() > 0
-                && variable.matches((firstVar = String.valueOf(variable.charAt(0))) + "+")) {
+        if (vars.length() > 0
+                && vars.matches((firstVar = String.valueOf(vars.charAt(0))) + "+")) {
             variable = firstVar;
         } else {
             throw new IllegalArgumentException("Syntax error: Statement must contain exactly one variable");

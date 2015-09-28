@@ -31,6 +31,8 @@ public class Polynomial {
      * @return Этот полином
      *
      * @see #add(Polynomial)
+     * @see #subtract(int, int)
+     * @see #subtract(Polynomial)
      * */
     public Polynomial add(int power, int coefficient) {
         if (monomials.containsKey(power)) {
@@ -50,6 +52,8 @@ public class Polynomial {
      * @return Этот полином
      *
      * @see #add(int, int)
+     * @see #subtract(int, int)
+     * @see #subtract(Polynomial)
      * */
     public Polynomial add(Polynomial polynomial) {
         for (Integer power : polynomial.monomials.keySet()) {
@@ -59,12 +63,49 @@ public class Polynomial {
     }
 
     /**
+     * Вычитает из этого полинома моном с указанными степенью и коэффициентом.
+     * Обработка коэффициентов при степенях полиномов происходит как описано в {@link #add(int, int)}.
+     *
+     * @param power Степень монома
+     * @param coefficient Коэффициент монома
+     *
+     * @return Этот полином
+     *
+     * @see #add(int, int)
+     * @see #add(Polynomial)
+     * @see #subtract(Polynomial)
+     * */
+    public Polynomial subtract(int power, int coefficient) {
+        return this.add(power, - coefficient);
+    }
+
+    /**
+     * Вычитает из этого полинома другой полином.
+     * Обработка коэффициентов при степенях полиномов происходит как описано в {@link #add(int, int)}.
+     *
+     * @param polynomial Вычитаемый полином
+     *
+     * @return Этот полином
+     *
+     * @see #add(int, int)
+     * @see #add(Polynomial)
+     * @see #subtract(int, int)
+     * */
+    public Polynomial subtract(Polynomial polynomial) {
+        return this.add(multiply(new Polynomial(variable).add(0, -1), polynomial));
+    }
+
+    /**
      * Произведение двух полиномов. Степени мономов складываются, а их коэффициенты перемножаются.
      *
      * @param p1 Первый полином
      * @param p2 Второй полином
      *
      * @return Произведение двух полиномов
+     *
+     * @see #multiply(Polynomial)
+     * @see #power(Polynomial, int)
+     * @see #power(int)
      * */
     public static Polynomial multiply(Polynomial p1, Polynomial p2) {
         Polynomial result = new Polynomial(p1.variable);
@@ -79,6 +120,60 @@ public class Polynomial {
         return result;
     }
 
+    /**
+     * Произведение этого полинома на другой полином.
+     * Мономы обрабатываются как описано в {@link #multiply(Polynomial, Polynomial)}.
+     *
+     * @param polynomial Второй полином
+     *
+     * @return Произведение двух полиномов
+     *
+     * @see #multiply(Polynomial, Polynomial)
+     * @see #power(Polynomial, int)
+     * @see #power(int)
+     * */
+    public Polynomial multiply(Polynomial polynomial) {
+        return multiply(this, polynomial);
+    }
+
+
+    /**
+     * Возведение полинома в степень.
+     * Мономы обрабатываются как описано в {@link #multiply(Polynomial, Polynomial)}.
+     *
+     * @param polynomial Полином
+     * @param power Степень
+     *
+     * @return Полином в указанной степени
+     *
+     * @see #multiply(Polynomial, Polynomial)
+     * @see #multiply(Polynomial)
+     * @see #power(int)
+     * */
+    public static Polynomial power(Polynomial polynomial, int power) {
+        return power == 0
+                ? new Polynomial(polynomial.variable).add(0, 1)
+                : power == 1
+                ? polynomial
+                : multiply(polynomial, power(polynomial, --power));
+    }
+
+    /**
+     * Возведение этого полинома в степень.
+     * Мономы обрабатываются как описано в {@link #multiply(Polynomial, Polynomial)}.
+     *
+     * @param power Степень
+     *
+     * @return Полином в указанной степени
+     *
+     * @see #multiply(Polynomial, Polynomial)
+     * @see #multiply(Polynomial)
+     * @see #power(Polynomial, int)
+     * */
+    public Polynomial power(int power) {
+        return power(this, power);
+    }
+
     private void removeZeroCoefficients() {
         Iterator<Integer> iterator = monomials.keySet().iterator();
         while (iterator.hasNext()) {
@@ -87,16 +182,18 @@ public class Polynomial {
     }
 
     /**
+     * Текстовое представление полинома в развернутом виде.
+     *
      * @return Текстовое представление полинома в развернутом виде
      * */
     @Override
     public String toString() {
 
+        removeZeroCoefficients();
         if (monomials.isEmpty()) return "";
 
         StringBuilder sb = new StringBuilder();
 
-        removeZeroCoefficients();
         //степень полинома
         int highestPower = monomials.lastKey();
         for (Integer power : monomials.descendingKeySet()) {

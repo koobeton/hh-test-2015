@@ -48,30 +48,11 @@ public class Task1 {
         //получаем входные данные
         List<String> dataList = getData(args);
 
-        Polynomial poly1 = new Polynomial("x")
-                .add(1, 1)
-                .add(0, -5);
-
-        System.out.println(poly1);
-
-        Polynomial poly2 = new Polynomial("x")
-                .add(3, 2)
-                .add(3, 1)
-                .add(1, -9);
-
-        System.out.println(poly2);
-
-        System.out.println(Polynomial.multiply(poly1, poly2));
-
-
-        /*//разворачиваем выражение
+        //разворачиваем выражение
         for (String data : dataList) {
             Parser parser = new Parser(data);
-            for (String str : parser.parse()) {
-                System.out.print(str + " ");
-            }
-            System.out.println();
-        }*/
+            System.out.println(parser.parse());
+        }
     }
 
     private static List<String> getData(String... args) {
