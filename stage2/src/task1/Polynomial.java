@@ -20,6 +20,44 @@ public class Polynomial {
         this.monomials = new TreeMap<>();
     }
 
+    /**
+     * Добавляет к этому полиному моном с указанными степенью и коэффициентом.
+     * Если полином уже содержит моном указанной степени, коэффициенты мономов
+     * складываются (с учетом знака).
+     *
+     * @param power Степень монома
+     * @param coefficient Коэффициент монома
+     *
+     * @return Этот полином
+     *
+     * @see #add(Polynomial)
+     * */
+    public Polynomial add(int power, int coefficient) {
+        if (monomials.containsKey(power)) {
+            monomials.put(power, monomials.get(power) + coefficient);
+        } else {
+            monomials.put(power, coefficient);
+        }
+        return this;
+    }
+
+    /**
+     * Добавляет к этому полиному другой полином.
+     * Сложение коэффициентов при степенях полиномов происходит как описано в {@link #add(int, int)}.
+     *
+     * @param polynomial Добавляемый полином
+     *
+     * @return Этот полином
+     *
+     * @see #add(int, int)
+     * */
+    public Polynomial add(Polynomial polynomial) {
+        for (Integer power : polynomial.monomials.keySet()) {
+            this.add(power, polynomial.monomials.get(power));
+        }
+        return this;
+    }
+
     private void removeZeroCoefficients() {
         Iterator<Integer> iterator = monomials.keySet().iterator();
         while (iterator.hasNext()) {
