@@ -151,10 +151,6 @@ public class Parser {
 
         Polynomial result = new Polynomial(variable);
         for (Polynomial polynomial : summary) {
-
-            //TODO
-            System.out.println(polynomial);
-
             result.add(polynomial);
         }
 
