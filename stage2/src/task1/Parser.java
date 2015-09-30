@@ -12,12 +12,14 @@ public class Parser {
         ADD_PARENTHESIS,        //добавление скобок
         SUBTRACT_PARENTHESIS,   //вычитание скобок
         MULTIPLY,               //умножение
+        MULTIPLY_MONOMIAL,      //умножение на моном
+        PARENTHESIS_MULTIPLY,   //умножение скобки на моном
         POWER,                  //возведение в степень
         OPEN_PARENTHESIS,       //открывающая скобка
         CLOSE_PARENTHESIS       //закрывающая скобка
     }
 
-    private static final String POLYNOMIAL_PATTERN = "[-+]?[\\[0-9\\]*\\[A-Za-z\\]?]+\\^?[0-9]*";
+    private static final String POLYNOMIAL_PATTERN = "[-+]?[0-9]*[A-Za-z]?\\^?[0-9]*";
     private String source;
     private String variable;
     private int charPointer;
@@ -60,15 +62,26 @@ public class Parser {
                     op = Operation.ADD_SUBTRACT;
                 }
             } else if (symbol == '(') {
-                op = Operation.OPEN_PARENTHESIS;
+                if (summary.isEmpty()) {
+                    op = Operation.OPEN_PARENTHESIS;
+                } else {
+                    op = Operation.MULTIPLY;
+                }
             } else if (symbol == ')') {
                 if (nextSymbol == '^') {
                     op = Operation.POWER;
+                } else if (Character.isLetterOrDigit(nextSymbol)) {
+                    op = Operation.PARENTHESIS_MULTIPLY;
                 } else {
                     op = Operation.CLOSE_PARENTHESIS;
                 }
             } else if (symbol == '*') {
-                op = Operation.MULTIPLY;
+                if (nextSymbol == '(') {
+                    charPointer++;
+                    op = Operation.MULTIPLY;
+                } else {
+                    op = Operation.MULTIPLY_MONOMIAL;
+                }
             } else throw new IllegalStateException("Fail on symbol: " + symbol);
 
             switch (op) {
@@ -94,7 +107,35 @@ public class Parser {
                 case CLOSE_PARENTHESIS:
                     charPointer++;
                     break loop;
-                    //break;
+                case MULTIPLY:
+                case MULTIPLY_MONOMIAL:
+                    charPointer++;
+                    if (summary.isEmpty()) {
+                        throw new IllegalStateException("Operations stack is empty on symbol: " + symbol);
+                    }
+                    Polynomial operand1 = summary.pollLast();
+                    Polynomial operand2;
+                    if (op == Operation.MULTIPLY) {
+                        operand2 = parseOperations();
+                    } else {
+                        monomial = new Scanner(source.substring(charPointer))
+                                .findInLine(POLYNOMIAL_PATTERN);
+                        charPointer += monomial.length();
+                        operand2 = parseMonomial(monomial);
+                    }
+                    summary.add(Polynomial.multiply(operand1, operand2));
+                    break;
+                case PARENTHESIS_MULTIPLY:
+                    charPointer++;
+                    operand1 = new Polynomial(variable);
+                    for (Polynomial polynomial : summary) {
+                        operand1.add(polynomial);
+                    }
+                    monomial = new Scanner(source.substring(charPointer))
+                            .findInLine(POLYNOMIAL_PATTERN);
+                    charPointer += monomial.length();
+                    operand2 = parseMonomial(monomial);
+                    return Polynomial.multiply(operand1, operand2);
                 case POWER:
                     charPointer += 2;
                     String power = new Scanner(source.substring(charPointer))
