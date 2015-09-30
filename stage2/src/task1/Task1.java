@@ -50,8 +50,7 @@ public class Task1 {
 
         //разворачиваем выражение
         for (String data : dataList) {
-            Parser parser = new Parser(data);
-            System.out.println(parser.parse());
+            System.out.println(new Parser(data).parse());
         }
     }
 
