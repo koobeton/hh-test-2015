@@ -4,7 +4,10 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Scanner;
 
-//TODO
+/**
+ * Парсит выражение, содержащее скобки, операции сложения, вычитания, умножения,
+ * возведения в константную степень и одну переменную и представляет это выражение в развёрнутом виде.
+ * */
 public class Parser {
 
     private enum Operation {
@@ -32,7 +35,11 @@ public class Parser {
         charPointer = 0;
     }
 
-    //TODO
+    /**
+     * Возвращает результат разбора выражения в виде полинома.
+     *
+     * @return Полином
+     * */
     public Polynomial parse() {
 
         return source == null || source.length() == 0
@@ -40,7 +47,14 @@ public class Parser {
                 : parseOperations();
     }
 
-    private Polynomial parseOperations() {
+    /**
+     * Парсит выражение по операциям.
+     *
+     * @return Полином
+     *
+     * @throws IllegalStateException Если выражение содержит некорректные символы или операции
+     * */
+    Polynomial parseOperations() {
 
         Deque<Polynomial> summary = new ArrayDeque<>();
 
@@ -141,11 +155,11 @@ public class Parser {
                     String power = new Scanner(source.substring(charPointer))
                             .findInLine("[-+]?[0-9]*");
                     charPointer += power.length();
-                    Polynomial result = new Polynomial(variable);
+                    Polynomial operand = new Polynomial(variable);
                     for (Polynomial polynomial : summary) {
-                        result.add(polynomial);
+                        operand.add(polynomial);
                     }
-                    return Polynomial.power(result, Integer.parseInt(power));
+                    return Polynomial.power(operand, Integer.parseInt(power));
             }
         }
 
